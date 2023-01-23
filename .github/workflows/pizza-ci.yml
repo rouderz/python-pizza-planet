@@ -26,8 +26,9 @@ jobs:
             pip install -r ./requirements.txt
 
       - name: run test
+        id: test
         run: |
-          python manage.py test
+          coverage run --source=app -m pytest -v app/test && coverage report -m
 
       - name: Slack Notification
         uses: rtCamp/action-slack-notify@v2
