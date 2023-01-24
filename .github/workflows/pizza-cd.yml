@@ -1,4 +1,4 @@
-name: PIZZA-PLANET-CI
+name: PIZZA-PLANET-CD
 
 on:
   push:
