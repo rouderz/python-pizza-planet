@@ -47,5 +47,5 @@ def create_orders(client, order_uri, create_ingredients, create_sizes, client_da
             'ingredients': shuffle_list(ingredients)[:5],
             'size_id': shuffle_list(sizes)[0]
         })
-        orders.append(new_order)
+        orders.append(new_order.json)
     return orders
