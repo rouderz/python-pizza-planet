@@ -1,38 +1,52 @@
 from app.common.http_methods import GET, POST, PUT
 from flask import Blueprint, jsonify, request
+from ..common import http_status_code
 
 from ..controllers import IngredientController
+
+class IngredientFactory:
+    @staticmethod
+    def create(request):
+        return IngredientController.create(request.json)
+
+    @staticmethod
+    def update(request):
+        return IngredientController.update(request.json)
+
+    @staticmethod
+    def get_by_id(request, _id: int):
+        return IngredientController.get_by_id(_id)
+
+    @staticmethod
+    def get_all(request):
+        return IngredientController.get_all()
 
 ingredient = Blueprint('ingredient', __name__)
 
 
 @ingredient.route('/', methods=POST)
 def create_ingredient():
-    ingredient, error = IngredientController.create(request.json)
-    response = ingredient if not error else {'error': error}
-    status_code = 200 if not error else 400
+    ingredient, error = IngredientFactory.create(request)
+    status_code, response = http_status_code.get_response_and_status(ingredient, error)
     return jsonify(response), status_code
 
 
 @ingredient.route('/', methods=PUT)
 def update_ingredient():
-    ingredient, error = IngredientController.update(request.json)
-    response = ingredient if not error else {'error': error}
-    status_code = 200 if not error else 400
+    ingredient, error = IngredientFactory.update(request)
+    status_code, response = http_status_code.get_response_and_status(ingredient, error)
     return jsonify(response), status_code
 
 
 @ingredient.route('/id/<_id>', methods=GET)
 def get_ingredient_by_id(_id: int):
-    ingredient, error = IngredientController.get_by_id(_id)
-    response = ingredient if not error else {'error': error}
-    status_code = 200 if ingredient else 404 if not error else 400
+    ingredient, error = IngredientFactory.get_by_id(request, _id)
+    status_code, response = http_status_code.get_response_and_status(ingredient, error)
     return jsonify(response), status_code
 
 
 @ingredient.route('/', methods=GET)
 def get_ingredients():
-    ingredients, error = IngredientController.get_all()
-    response = ingredients if not error else {'error': error}
-    status_code = 200 if ingredients else 404 if not error else 400
+    ingredients, error = IngredientFactory.get_all(request)
+    status_code, response = http_status_code.get_response_and_status(ingredients, error)
     return jsonify(response), status_code
