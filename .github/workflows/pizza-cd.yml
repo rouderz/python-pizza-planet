@@ -65,14 +65,14 @@ jobs:
       - name: Terraform Plan
         id: plan
         env:
-          TF_VAR_pizza-planet-image: ${{ format('{0}/{1}:{2}', steps.login-ecr.outputs.registry,pizza-planet-repository, github.sha) }}
+          TF_VAR_pizza-planet-image: ${{ format('{0}/pizza-planet-repository:{1}', steps.login-ecr.outputs.registry, github.sha) }}
         run: terraform plan -no-color
         working-directory: ${{ env.WORKING_DIR }}
 
       - name: Terraform Apply
         id: apply
         env:
-          TF_VAR_pizza-planet-image: ${{ format('{0}/{1}:{2}', steps.login-ecr.outputs.registry,pizza-planet-repository, github.sha) }}
+          TF_VAR_pizza-planet-image: ${{ format('{0}/pizza-planet-repository:{1}', steps.login-ecr.outputs.registry, github.sha) }}
         run: terraform apply -auto-approve -input=false
         working-directory: ${{ env.WORKING_DIR }}
     
