@@ -46,6 +46,15 @@ jobs:
         run: aws s3 sync . s3://bucket-pizza-planet-frontend --delete
         working-directory: ui
 
+      - name: Sops Binary Installer
+        uses: mdgreenwald/mozilla-sops-action@v1
+
+      - name: Configure GPG Key
+        run: |
+          echo -n "$GPG_SIGNING_KEY" | base64 --decode | gpg --import
+        env:
+          GPG_SIGNING_KEY: ${{ secrets.GPG_KEY }}
+
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
@@ -66,6 +75,7 @@ jobs:
         id: plan
         env:
           TF_VAR_pizza-planet-image: ${{ format('{0}/pizza-planet-repository:{1}', steps.login-ecr.outputs.registry, github.sha) }}
+          TF_VAR_KEY: ${{ secrets.SOPS_KEY }}
         run: terraform plan -no-color
         working-directory: ${{ env.WORKING_DIR }}
 
@@ -73,6 +83,7 @@ jobs:
         id: apply
         env:
           TF_VAR_pizza-planet-image: ${{ format('{0}/pizza-planet-repository:{1}', steps.login-ecr.outputs.registry, github.sha) }}
+          TF_VAR_KEY: ${{ secrets.SOPS_KEY }}
         run: terraform apply -auto-approve -input=false
         working-directory: ${{ env.WORKING_DIR }}
     
