@@ -3,6 +3,8 @@ name: PIZZA-PLANET-CD
 on:
   push:
       branches: [ main ]
+  pull_request:
+      branches: [ main ]
 
 jobs:
   cd:
@@ -10,6 +12,7 @@ jobs:
     env:
       WORKING_DIR: infrastructure/backend
       IMAGE_TAG: ${{ github.sha }}
+      database: ${{ secrets.DATABASE }}
     strategy:
       matrix:
         python-version: ["3.10"]
@@ -28,6 +31,7 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: "us-east-1"
 
       - name: Install dependencies
         run: |
@@ -38,16 +42,13 @@ jobs:
         run: |
           python manage.py test
 
-      - name: move database
-        run: |
-          python manage.py db init
-          python manage.py db migrate
-          python manage.py db upgrade
-          mv pizza.sqlite app/
-
       - name: deploy frontend
         run: aws s3 sync . s3://bucket-pizza-planet-frontend --delete
         working-directory: ui
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
 
       - name: Build, tag, and push Docker image
         env:
@@ -56,6 +57,24 @@ jobs:
           docker build -t pizza-planet-repository .
           docker tag pizza-planet-repository $ECR_REGISTRY_STEP/pizza-planet-repository:$IMAGE_TAG
           docker push $ECR_REGISTRY_STEP/pizza-planet-repository:$IMAGE_TAG
+
+      - name: Terraform init
+        run: terraform init
+        working-directory: ${{ env.WORKING_DIR }}
+
+      - name: Terraform Plan
+        id: plan
+        env:
+          TF_VAR_pizza-planet-image: ${{ format('{0}/{1}:{2}', steps.login-ecr.outputs.registry,pizza-planet-repository, github.sha) }}
+        run: terraform plan -no-color
+        working-directory: ${{ env.WORKING_DIR }}
+
+      - name: Terraform Apply
+        id: apply
+        env:
+          TF_VAR_pizza-planet-image: ${{ format('{0}/{1}:{2}', steps.login-ecr.outputs.registry,pizza-planet-repository, github.sha) }}
+        run: terraform apply -auto-approve -input=false
+        working-directory: ${{ env.WORKING_DIR }}
     
       - name: Slack Notification
         uses: rtCamp/action-slack-notify@v2
