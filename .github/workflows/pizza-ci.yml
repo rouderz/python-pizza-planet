@@ -7,6 +7,8 @@ on:
 jobs:
   ci:
     runs-on: ubuntu-latest
+    env:
+      database: ${{ secrets.DATABASE }}
     strategy:
       matrix:
         python-version: ["3.10"]
@@ -25,6 +27,16 @@ jobs:
             python -m pip install --upgrade pip
             pip install -r ./requirements.txt
 
+      - name: Slack Notification
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_TITLE: Pizza planet Continues integration"
+          SLACK_USERNAME: "Rouderz"
+          SLACK_CHANNEL: "pizza-planet-dev"
+          SLACK_COLOR: ${{ job.status }}
+          SLACK_ICON: https://imagesvc.meredithcorp.io/v3/mm/image?url=https%3A%2F%2Fstatic.onecms.io%2Fwp-content%2Fuploads%2Fsites%2F19%2F2014%2F07%2F10%2Fpepperoni-pizza-ck-x.jpg&q=60?size=48
+
       - name: run test
         run: |
           coverage run --source=app -m pytest -v app/test && coverage report -m
@@ -37,13 +49,3 @@ jobs:
         with:
           coverageFile: coverage.xml
           token: ${{ secrets.TOKEN }}
-
-      - name: Slack Notification
-        uses: rtCamp/action-slack-notify@v2
-        env:
-          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-          SLACK_TITLE: Pizza planet Continues integration"
-          SLACK_USERNAME: "Rouderz"
-          SLACK_CHANNEL: "pizza-planet-dev"
-          SLACK_COLOR: ${{ job.status }}
-          SLACK_ICON: https://imagesvc.meredithcorp.io/v3/mm/image?url=https%3A%2F%2Fstatic.onecms.io%2Fwp-content%2Fuploads%2Fsites%2F19%2F2014%2F07%2F10%2Fpepperoni-pizza-ck-x.jpg&q=60?size=48

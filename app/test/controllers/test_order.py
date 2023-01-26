@@ -86,3 +86,4 @@ def test_get_all(app, ingredients, sizes, client_data):
         for param, value in created_order.items():
             pytest.assume(searchable_orders[current_id][param] == value)
 
+
