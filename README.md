@@ -6,10 +6,12 @@ This is an example software for a pizzeria that takes customizable orders.
 
 ## Table of Contents
 
+- [Table of Contents](#table-of-contents)
 - [Getting started](#getting-started)
 - [Running the backend project](#running-the-backend-project)
 - [Running the frontend](#running-the-frontend)
-- [Testing the backend](#testing-the-backend)
+  - [Testing the backend](#testing-the-backend)
+  - [Seed the backend](#seed-the-backend)
 
 ## Getting started
 
@@ -20,6 +22,8 @@ You will need the following general tools:
 - A text editor: preferably [Visual Studio Code](https://code.visualstudio.com/download)
 
 - Extensions such as [Python](https://marketplace.visualstudio.com/items?itemName=ms-python.python) and [Live Server](https://marketplace.visualstudio.com/items?itemName=ritwickdey.LiveServer)
+
+- An images container such as [Docker](https://docs.docker.com/get-docker/)
 
 ## Running the backend project
 
@@ -55,9 +59,17 @@ _For windows users:_
 pip3 install -r requirements.txt
 ```
 
-- Start the database (Only needed for the first run):
-
+- Turn on the database
+  
 ```bash
+make docker-run or docker-compose up -d
+```
+
+- Start the database (Only needed for the first run):
+- To execute these commands the database must be up  
+  
+```bash
+export database="postgresql://pizza:pizzaplanet@localhost:5432/pizzaplanet"
 python3 manage.py db init
 python3 manage.py db migrate
 python3 manage.py db upgrade
@@ -78,9 +90,9 @@ set FLASK_ENV=development
 ```
 
 - Run the project with:
-
+- The first command for default has an `export FLASK_ENV=development` and the second one has a `set FLASK_ENV=development` for windows users
 ```bash
-python3 manage.py run
+make run-project | make run-project-windows
 ```
 
 ## Running the frontend
@@ -111,4 +123,11 @@ ext install ritwickdey.LiveServer
 
 ```bash
 python3 manage.py test
+```
+
+### Seed the backend
+
+- Run the seed command
+```bash
+make seed
 ```

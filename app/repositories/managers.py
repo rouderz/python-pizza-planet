@@ -1,6 +1,6 @@
 from typing import Any, List, Optional, Sequence
-
-from sqlalchemy.sql import text, column
+import calendar
+from sqlalchemy.sql import text, column, func, desc
 
 from .models import OrderBeverage, Ingredient, Order, OrderDetail, Size, Beverage, db
 from .serializers import (
@@ -55,10 +55,10 @@ class IngredientManager(BaseManager):
 
     @classmethod
     def get_by_id_list(cls, ids: Sequence):
-        return (
-            cls.session.query(cls.model).filter(cls.model._id.in_(set(ids))).all() or []
-        )
-
+        serializer = cls.serializer(many=True)
+        _objects = cls.session.query(cls.model).filter(cls.model._id.in_(set(ids))).all() or []
+        result = serializer.dump(_objects)
+        return result
 
 class OrderManager(BaseManager):
     model = Order
@@ -76,8 +76,8 @@ class OrderManager(BaseManager):
             (
                 OrderDetail(
                     order_id=new_order._id,
-                    ingredient_id=ingredient._id,
-                    ingredient_price=ingredient.price,
+                    ingredient_id=ingredient.get('_id'),
+                    ingredient_price=ingredient.get('price'),
                 )
                 for ingredient in ingredients
             )
@@ -85,8 +85,8 @@ class OrderManager(BaseManager):
         cls.session.add_all(
             OrderBeverage(
                 order_id=new_order._id,
-                beverage_id=beverage._id,
-                beverage_price=beverage.price,
+                beverage_id=beverage.get('_id'),
+                beverage_price=beverage.get('_id'),
             )
             for beverage in beverages
         )
@@ -110,6 +110,67 @@ class BeverageManager(BaseManager):
 
     @classmethod
     def get_by_id_list(cls, ids: Sequence):
-        return (
-            cls.session.query(cls.model).filter(cls.model._id.in_(set(ids))).all() or []
-        )
+        serializer = cls.serializer(many=True)
+        _objects = cls.session.query(cls.model).filter(cls.model._id.in_(set(ids))).all() or []
+        result = serializer.dump(_objects)
+        return result
+
+
+class ReportManager(BaseManager):
+
+    @classmethod
+    def get_all_report(cls):
+        return {
+            'best_customers': cls.get_top_3_customers(),
+            'most_requested_ingredient': cls.get_most_request_ingredients(),
+            'date_with_most_revenue': cls.get_month_with_most_revenue()
+        }
+
+    @classmethod
+    def get_top_3_customers(cls):
+        customers = []
+        data = cls.session.query(
+            Order.client_name,
+            func.sum(Order.total_price).label('total')
+        ).group_by(Order.client_name).order_by(desc('total')).limit(3)
+        if data is not None:
+            for item in data:
+                customers.append({
+                    "client": item.client_name,
+                    "total": item.total
+                })
+        return customers
+        
+    @classmethod
+    def get_most_request_ingredients(cls) -> list:
+        most_request_ingredients = {}
+        data = cls.session.query(
+            Ingredient.name,
+            func.count(OrderDetail.ingredient_id).label('times')
+        ).join(OrderDetail).group_by(Ingredient).order_by(desc('times')).first()
+        
+        if data is not None:
+            most_request_ingredients = {
+                "Ingredient": data.name,
+                "quantity": data.times
+            }
+
+        return most_request_ingredients
+
+    
+    @classmethod
+    def get_month_with_most_revenue(cls):
+        month = {}
+        data = cls.session.query(
+            Order.date,
+            func.sum(Order.total_price).label('total')
+            ).group_by(Order.date).order_by(desc('total')).first()
+
+        if data is not None:
+            month = {
+                "month": data.date,
+                "total_sales": round(data.total, 2)
+            }
+
+        return month
+        pass
