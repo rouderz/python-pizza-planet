@@ -9,18 +9,18 @@ size = Blueprint('size', __name__)
 
 @size.route('/', methods=POST)
 def create_size():
-    return BaseSerializer.serialize(SizeController, 'create', request)
+    return BaseServices.serialize(SizeController, 'create', request)
 
 
 @size.route('/', methods=PUT)
 def update_size():
-    return BaseSerializer.serialize(SizeController, 'update', request)
+    return BaseServices.serialize(SizeController, 'update', request)
 
 
 @size.route('/id/<_id>', methods=GET)
 def get_size_by_id(_id: int):
-    return BaseSerializer.serialize(SizeController, 'by_id', request, _id)
+    return BaseServices.serialize(SizeController, 'by_id', request, _id)
 
 @size.route('/', methods=GET)
 def get_all_size():
-    return BaseSerializer.serialize(SizeController, 'get_all', request)
+    return BaseServices.serialize(SizeController, 'get_all', request)

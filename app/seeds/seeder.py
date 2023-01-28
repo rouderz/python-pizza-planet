@@ -35,7 +35,6 @@ def create_orders(count: int, clients) -> list:
         
         new_order.append(
             Order(
-                _id=index,
                 client_name=name,
                 client_dni=fake.pyint(99999999, 999999999),
                 client_phone=fake.pyint(99999999, 999999999),

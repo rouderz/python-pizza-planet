@@ -10,4 +10,4 @@ report = Blueprint('report', __name__)
 
 @report.route('/', methods=GET)
 def get_report():
-    return BaseSerializer.serialize(ReportController, 'get_report', request)
+    return BaseServices.serialize(ReportController, 'get_report', request)

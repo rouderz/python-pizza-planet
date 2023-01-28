@@ -1,27 +1,27 @@
 from flask import jsonify
 
-class BaseSerializer:
+class BaseServices:
 
     def serialize(controller, type: str, request, *args):
-        serializer = data_factory(type)
+        serializer = services_factory(type)
         return serializer(controller, request, *args)
 
-def data_factory(type: str):
-    if type == 'create':
-        return create
-    if type == 'update':
-        return update
-    if type == 'by_id':
-        return get_by_id
-    if type == 'get_all':
-        return get_all
-    if type == 'get_report':
-        return get_report
+def services_factory(type: str):
+    options = {
+        'create': create,
+        'update': update,
+        'by_id': get_by_id,
+        'get_all': get_all,
+        'get_report': get_report
+    }
+
+    if type in options:
+        return options[type]
     else:
         raise ValueError(type)
 
 
-def create_response(data, error):
+def services_response(data, error):
     response = {}
     if not error:
         response = data
@@ -32,20 +32,20 @@ def create_response(data, error):
 
 def create(controller, request):
     data, error = controller.create(request.json)
-    return create_response(data, error)
+    return services_response(data, error)
 
 def update(controller, request):
     data, error = controller.update(request.json)
-    return create_response(data, error)
+    return services_response(data, error)
 
 def get_by_id(controller, request, _id):
     data, error = controller.get_by_id(_id)
-    return create_response(data, error)
+    return services_response(data, error)
 
 def get_all(controller, request):
     data, error = controller.get_all()
-    return create_response(data, error)
+    return services_response(data, error)
 
 def get_report(controller, request):
     data, error = controller.get_report()
-    return create_response(data, error)
+    return services_response(data, error)
