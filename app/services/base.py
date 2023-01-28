@@ -15,6 +15,8 @@ def data_factory(type: str):
         return get_by_id
     if type == 'get_all':
         return get_all
+    if type == 'get_report':
+        return get_report
     else:
         raise ValueError(type)
 
@@ -42,4 +44,8 @@ def get_by_id(controller, request, _id):
 
 def get_all(controller, request):
     data, error = controller.get_all()
+    return create_response(data, error)
+
+def get_report(controller, request):
+    data, error = controller.get_report()
     return create_response(data, error)

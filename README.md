@@ -6,10 +6,11 @@ This is an example software for a pizzeria that takes customizable orders.
 
 ## Table of Contents
 
+- [Table of Contents](#table-of-contents)
 - [Getting started](#getting-started)
 - [Running the backend project](#running-the-backend-project)
 - [Running the frontend](#running-the-frontend)
-- [Testing the backend](#testing-the-backend)
+  - [Testing the backend](#testing-the-backend)
 
 ## Getting started
 
@@ -58,6 +59,7 @@ pip3 install -r requirements.txt
 - Start the database (Only needed for the first run):
 
 ```bash
+export database="postgresql://pizza:pizzaplanet@localhost:5432/pizzaplanet"
 python3 manage.py db init
 python3 manage.py db migrate
 python3 manage.py db upgrade
