@@ -137,40 +137,40 @@ class ReportManager(BaseManager):
             for item in data:
                 customers.append({
                     "client": item.client_name,
-                    "total": item.total
+                    "total": round(item.total, 2)
                 })
         return customers
         
     @classmethod
     def get_most_request_ingredients(cls) -> list:
-        most_request_ingredients = {}
+        most_request_ingredients = []
         data = cls.session.query(
             Ingredient.name,
             func.count(OrderDetail.ingredient_id).label('times')
-        ).join(OrderDetail).group_by(Ingredient).order_by(desc('times')).first()
+        ).join(OrderDetail).group_by(Ingredient).order_by(desc('times')).limit(3)
         
         if data is not None:
-            most_request_ingredients = {
-                "Ingredient": data.name,
-                "quantity": data.times
-            }
+            for item in data:
+                most_request_ingredients.append({
+                "ingredient": item.name,
+                "quantity": item.times
+            })
 
         return most_request_ingredients
 
     
     @classmethod
     def get_month_with_most_revenue(cls):
-        month = {}
+        month = []
         data = cls.session.query(
             Order.date,
             func.sum(Order.total_price).label('total')
             ).group_by(Order.date).order_by(desc('total')).first()
 
         if data is not None:
-            month = {
+            month.append({
                 "month": data.date,
                 "total_sales": round(data.total, 2)
-            }
+            })
 
         return month
-        pass

@@ -13,6 +13,7 @@ run-project-windows: docker-run
 	python manage.py run 
 
 coverage:
+	export database="postgresql://pizza:pizzaplanet@localhost:5432/pizzaplanet" && \
 	coverage run --source=app -m pytest -v app/test && coverage report -m
 
 docker-run:
