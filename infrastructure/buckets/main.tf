@@ -40,11 +40,6 @@ resource "aws_s3_bucket" "s3-bucket-frontend" {
   bucket = "bucket-pizza-planet-frontend"
 }
 
-resource "aws_s3_bucket_acl" "s3-bucket-acl-frontend" {
-  bucket = aws_s3_bucket.s3-bucket-frontend.id
-  acl    = "private"
-}
-
 resource "aws_s3_bucket_website_configuration" "s3_website_config" {
   bucket = aws_s3_bucket.s3-bucket-frontend.id
   index_document {

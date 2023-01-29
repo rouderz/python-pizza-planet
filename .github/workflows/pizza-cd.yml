@@ -8,7 +8,7 @@ jobs:
   cd:
     runs-on: ubuntu-latest
     env:
-      WORKING_DIR: infrastructure/backend
+      WORKING_DIR: infrastructure/
       IMAGE_TAG: ${{ github.sha }}
       database: ${{ secrets.DATABASE }}
     strategy:
@@ -42,7 +42,7 @@ jobs:
 
       - name: deploy frontend
         run: aws s3 sync . s3://bucket-pizza-planet-frontend --delete
-        working-directory: ui
+        working-directory: ui-v2
 
       - name: Sops Binary Installer
         uses: mdgreenwald/mozilla-sops-action@v1
@@ -65,26 +65,39 @@ jobs:
           docker tag pizza-planet-repository $ECR_REGISTRY_STEP/pizza-planet-repository:$IMAGE_TAG
           docker push $ECR_REGISTRY_STEP/pizza-planet-repository:$IMAGE_TAG
 
-      - name: Terraform init
+      - name: Terraform init backend
         run: terraform init
-        working-directory: ${{ env.WORKING_DIR }}
+        working-directory: ${{ env.WORKING_DIR }}/backend
 
-      - name: Terraform Plan
+      - name: Terraform Plan backend
         id: plan
         env:
           TF_VAR_pizza-planet-image: ${{ format('{0}/pizza-planet-repository:{1}', steps.login-ecr.outputs.registry, github.sha) }}
           TF_VAR_KEY: ${{ secrets.SOPS_KEY }}
         run: terraform plan -no-color
-        working-directory: ${{ env.WORKING_DIR }}
+        working-directory: ${{ env.WORKING_DIR }}/backend
 
-      - name: Terraform Apply
+      - name: Terraform Apply backend
         id: apply
         env:
           TF_VAR_pizza-planet-image: ${{ format('{0}/pizza-planet-repository:{1}', steps.login-ecr.outputs.registry, github.sha) }}
           TF_VAR_KEY: ${{ secrets.SOPS_KEY }}
         run: terraform apply -auto-approve -input=false
-        working-directory: ${{ env.WORKING_DIR }}
+        working-directory: ${{ env.WORKING_DIR }}/backend
     
+      - name: Terraform init frontend
+        run: terraform init
+        working-directory: ${{ env.WORKING_DIR }}/frontend
+
+      - name: Terraform Plan frontend
+        run: terraform plan -no-color
+        working-directory: ${{ env.WORKING_DIR }}/frontend
+
+
+      - name: Terraform Apply frontend
+        run: terraform apply -auto-approve -input=false
+        working-directory: ${{ env.WORKING_DIR }}/frontend
+
       - name: Slack Notification
         uses: rtCamp/action-slack-notify@v2
         env:
