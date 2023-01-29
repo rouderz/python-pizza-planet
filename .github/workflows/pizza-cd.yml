@@ -67,11 +67,11 @@ jobs:
           docker tag pizza-planet-repository $ECR_REGISTRY_STEP/pizza-planet-repository:$IMAGE_TAG
           docker push $ECR_REGISTRY_STEP/pizza-planet-repository:$IMAGE_TAG
 
-      - name: Terraform init
+      - name: Terraform init backend
         run: terraform init
         working-directory: ${{ env.WORKING_DIR }}/backend
 
-      - name: Terraform Plan
+      - name: Terraform Plan backend
         id: plan
         env:
           TF_VAR_pizza-planet-image: ${{ format('{0}/pizza-planet-repository:{1}', steps.login-ecr.outputs.registry, github.sha) }}
@@ -79,7 +79,7 @@ jobs:
         run: terraform plan -no-color
         working-directory: ${{ env.WORKING_DIR }}/backend
 
-      - name: Terraform Apply
+      - name: Terraform Apply backend
         id: apply
         env:
           TF_VAR_pizza-planet-image: ${{ format('{0}/pizza-planet-repository:{1}', steps.login-ecr.outputs.registry, github.sha) }}
@@ -87,16 +87,16 @@ jobs:
         run: terraform apply -auto-approve -input=false
         working-directory: ${{ env.WORKING_DIR }}/backend
     
-      - name: Terraform init
+      - name: Terraform init frontend
         run: terraform init
         working-directory: ${{ env.WORKING_DIR }}/frontend
 
-      - name: Terraform Plan
+      - name: Terraform Plan frontend
         run: terraform plan -no-color
         working-directory: ${{ env.WORKING_DIR }}/frontend
 
 
-      - name: Terraform Apply
+      - name: Terraform Apply frontend
         run: terraform apply -auto-approve -input=false
         working-directory: ${{ env.WORKING_DIR }}/frontend
 
