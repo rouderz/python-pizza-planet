@@ -4,4 +4,5 @@
     "python.testing.pytestArgs": [
         "app"
     ],
+    "python.analysis.typeCheckingMode": "off",
 }

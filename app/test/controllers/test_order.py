@@ -43,7 +43,7 @@ def test_create(app, ingredients, size, client_data, beverages):
     created_order, error = OrderController.create(order)
     size_id = order.pop('size_id', None)
     ingredient_ids = order.pop('ingredients', [])
-    order.pop('beverages', [])
+    beverage_ids = order.pop('beverages', [])
     pytest.assume(error is None)
     for param, value in order.items():
         pytest.assume(param in created_order)
@@ -51,10 +51,17 @@ def test_create(app, ingredients, size, client_data, beverages):
         pytest.assume(created_order['_id'])
         pytest.assume(size_id == created_order['size']['_id'])
 
+        print(created_order)
         ingredients_in_detail = set(
             item['ingredient']['_id'] for item in created_order['detail']
         )
         pytest.assume(not ingredients_in_detail.difference(ingredient_ids))
+
+        beverages_in_detail = set(
+            item['beverage']['_id'] for item in created_order['order_beverage']
+        )
+        pytest.assume(not beverages_in_detail.difference(beverage_ids))
+
 
 def test_failure_create_payload(app):
     failure_create, error = OrderController.create({"foo": "foo"})
